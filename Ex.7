@@ -1,7 +1,20 @@
+!pip install nltk
+import nltk
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+
 from nltk.tokenize import word_tokenize
-from nltk  import pos_tag
-text="this is my pen"
-words=word_tokenize(text)
-print(words)
-tag1=pos_tag(words)
-print(tag1)
+
+def perform_pos_tagging(text):
+    # Tokenize the text into words
+    tokens = word_tokenize(text)
+
+    # Perform part-of-speech tagging
+    tagged_tokens = nltk.pos_tag(tokens)
+
+    return tagged_tokens
+
+# Example usage
+text = "The cats are playing in the garden"
+tagged_tokens = perform_pos_tagging(text)
+print(tagged_tokens)
