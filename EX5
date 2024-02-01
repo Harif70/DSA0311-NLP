@@ -1,13 +1,23 @@
-from nltk import PorterStemmer
-from nltk.tokenize import word_tokenize
+!pip install nltk
 import nltk
+nltk.download('punkt')
 nltk.download('wordnet')
-nltk.download('words')
-nltk.download('stopwords')
-nltk.download('maxent_ne_chunker')
-text="you must be takecare  while crossing road and also lookup the magically"
-port= PorterStemmer()
-words=word_tokenize(text)
-print(words)
-stem1=[port.stem(word) for word in words]
-print(stem1)
+
+from nltk.stem import PorterStemmer
+
+def perform_word_stemming(words):
+    # Initialize the Porter stemmer
+    stemmer = PorterStemmer()
+
+    # Perform word stemming on each word
+    stemmed_words = []
+    for word in words:
+        stemmed_word = stemmer.stem(word)
+        stemmed_words.append(stemmed_word)
+
+    return stemmed_words
+
+# Example usage
+words = ["running", "jumps", "played"]
+stemmed_words = perform_word_stemming(words)
+print(stemmed_words)
