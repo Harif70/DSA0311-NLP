@@ -1,44 +1,44 @@
-!pip install stanfordnlp
-import stanfordnlp
-stanfordnlp.download('en')
+!pip install nltk
+import nltk
+nltk.download('wordnet')
+nltk.download('punkt')
 
-def resolve_references(text):
-    # Initialize the StanfordNLP pipeline
-    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse')
+from nltk.corpus import wordnet as wn
+from nltk.tokenize import word_tokenize
 
-    # Process the input text
-    doc = nlp(text)
+def lesk(word, sentence):
+    best_sense = None
+    max_overlap = 0
 
-    # Initialize a dictionary to store resolved references
-    resolved_references = {}
+    # Tokenize the sentence into words
+    context = word_tokenize(sentence)
 
-    # Iterate over sentences in the document
-    for sentence in doc.sentences:
-        for word in sentence.words:
-            # Check if the word is a pronoun
-            if word.upos == 'PRON':
-                # Retrieve the head of the pronoun
-                head_id = word.head
+    # Iterate over the synsets of the target word
+    for sense in wn.synsets(word):
+        signature = word_tokenize(sense.definition())
 
-                # Retrieve the corresponding word object
-                head_word = sentence.words[head_id - 1]
+        # Add examples to the signature
+        for example in sense.examples():
+            signature += word_tokenize(example)
 
-                # If the head word is a noun, replace the pronoun with it
-                if head_word.upos == 'NOUN':
-                    resolved_references[word.text] = head_word.text
+        # Calculate the overlap between the signature and the context
+        overlap = len(set(signature) & set(context))
 
-    # Replace pronouns with their resolved references in the text
-    for pronoun, noun in resolved_references.items():
-        text = text.replace(pronoun, noun)
+        # Update the best sense if the overlap is greater
+        if overlap > max_overlap:
+            max_overlap = overlap
+            best_sense = sense
 
-    return text
+    return best_sense
 
 # Example usage
-text = "John went to the store. He bought some groceries."
-resolved_text = resolve_references(text)
+word = "bank"
+sentence = "I went to the bank to deposit some money."
+sense = lesk(word, sentence)
 
-print("Original text:")
-print(text)
-print()
-print("Resolved text:")
-print(resolved_text)
+if sense:
+    print("Word:", word)
+    print("Sense:", sense)
+    print("Definition:", sense.definition())
+else:
+    print("No sense found for the word.")
