@@ -1,71 +1,41 @@
-class Parser:
-    def __init__(self, tokens):
-        self.tokens = tokens
-        self.current_token = None
-        self.index = -1
-        self.advance()
+!pip install nltk
+import nltk
+nltk.download('punkt')
 
-    def advance(self):
-        self.index += 1
-        if self.index < len(self.tokens):
-            self.current_token = self.tokens[self.index]
-        else:
-            self.current_token = None
+from nltk import CFG
+from nltk.parse import RecursiveDescentParser
 
-    def parse(self):
-        return self.expr()
+def parse_sentence(grammar, sentence):
+    # Create a RecursiveDescentParser with the specified grammar
+    parser = RecursiveDescentParser(grammar)
 
-    def expr(self):
-        result = self.term()
+    # Tokenize the sentence into words
+    tokens = nltk.word_tokenize(sentence)
 
-        while self.current_token in ('+', '-'):
-            operator = self.current_token
-            self.advance()
-            right = self.term()
-            if operator == '+':
-                result += right
-            elif operator == '-':
-                result -= right
+    # Parse the sentence and return the first result
+    try:
+        parsed_tree = next(parser.parse(tokens))
+        return parsed_tree
+    except StopIteration:
+        return None
 
-        return result
+# Example usage
+grammar = CFG.fromstring("""
+    S -> NP VP
+    NP -> Det N | Det N PP
+    VP -> V NP | V NP PP
+    PP -> P NP
+    Det -> 'the' | 'a'
+    N -> 'cat' | 'dog'
+    V -> 'chased' | 'sat'
+    P -> 'on' | 'in'
+""")
 
-    def term(self):
-        result = self.factor()
+sentence = "the cat chased a dog"
+parsed_tree = parse_sentence(grammar, sentence)
 
-        while self.current_token in ('*', '/'):
-            operator = self.current_token
-            self.advance()
-            right = self.factor()
-            if operator == '*':
-                result *= right
-            elif operator == '/':
-                if right == 0:
-                    raise ZeroDivisionError("Division by zero")
-                result /= right
-
-        return result
-
-    def factor(self):
-        token = self.current_token
-        self.advance()
-
-        if token == '(':
-            result = self.expr()
-            if self.current_token != ')':
-                raise SyntaxError("Expected closing parenthesis")
-            self.advance()
-            return result
-        elif token.isdigit():
-            return int(token)
-        else:
-            raise SyntaxError("Invalid syntax")
-
-
-def parse_input(input_string):
-    tokens = input_string.replace(' ', '').replace('\t', '').split(',')
-    parser = Parser(tokens)
-    return parser.parse()
-
-input_string = '5, *, (, 3, +, 7,), +, 10'
-result = parse_input(input_string)
-print(f"Result: {result}")
+if parsed_tree:
+    print("Parse tree:")
+    print(parsed_tree)
+else:
+    print("No parse tree found for the sentence.")
