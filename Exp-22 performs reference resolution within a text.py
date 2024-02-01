@@ -1,22 +1,44 @@
-import nltk
+!pip install stanfordnlp
+import stanfordnlp
+stanfordnlp.download('en')
+
 def resolve_references(text):
-    sentences = nltk.sent_tokenize(text)
-    tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
-    tagged_sentences = [nltk.pos_tag(sentence) for sentence in tokenized_sentences]
-    resolved_text = []
-    pronouns = set(['he', 'him', 'his', 'she', 'her', 'it', 'they', 'them', 'their'])
+    # Initialize the StanfordNLP pipeline
+    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma,depparse')
 
-    for tagged_sentence in tagged_sentences:
-        resolved_sentence = []
-        for word, pos in tagged_sentence:
-            if word.lower() in pronouns and len(resolved_sentence) > 0:
-                antecedent = resolved_sentence[-1]
-                resolved_sentence.append(f'({word} -> {antecedent})')
-            else:
-                resolved_sentence.append(word)
-        resolved_text.append(' '.join(resolved_sentence))
+    # Process the input text
+    doc = nlp(text)
 
-    return ' '.join(resolved_text)
-text = "John went to the market and He bought some fruits."
+    # Initialize a dictionary to store resolved references
+    resolved_references = {}
+
+    # Iterate over sentences in the document
+    for sentence in doc.sentences:
+        for word in sentence.words:
+            # Check if the word is a pronoun
+            if word.upos == 'PRON':
+                # Retrieve the head of the pronoun
+                head_id = word.head
+
+                # Retrieve the corresponding word object
+                head_word = sentence.words[head_id - 1]
+
+                # If the head word is a noun, replace the pronoun with it
+                if head_word.upos == 'NOUN':
+                    resolved_references[word.text] = head_word.text
+
+    # Replace pronouns with their resolved references in the text
+    for pronoun, noun in resolved_references.items():
+        text = text.replace(pronoun, noun)
+
+    return text
+
+# Example usage
+text = "John went to the store. He bought some groceries."
 resolved_text = resolve_references(text)
+
+print("Original text:")
+print(text)
+print()
+print("Resolved text:")
 print(resolved_text)
