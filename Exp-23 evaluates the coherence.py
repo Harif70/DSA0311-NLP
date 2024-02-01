@@ -1,18 +1,33 @@
+!pip install nltk
+!pip install numpy
 import nltk
-def calculate_coherence(text):
-    sentences = nltk.sent_tokenize(text)
-    coherence_markers = ['however', 'therefore', 'consequently', 'nevertheless', 'furthermore', 'meanwhile', 'although', 'while', 'yet', 'moreover']
+import numpy as np
+from nltk.tokenize import sent_tokenize
+from sklearn.metrics.pairwise import cosine_similarity
 
-    total_markers = 0
-    for sentence in sentences:
-        tokenized_sentence = nltk.word_tokenize(sentence.lower())
-        for marker in coherence_markers:
-            if marker in tokenized_sentence:
-                total_markers += 1
+def compute_coherence(text):
+    # Tokenize the text into sentences
+    sentences = sent_tokenize(text)
 
-    return total_markers
+    # Tokenize sentences into words
+    tokenized_sentences = [nltk.word_tokenize(sentence) for sentence in sentences]
 
-text = "The weather was terrible. However, they decided to go for a picnic. Therefore, they packed their bags and left."
+    # Compute the sentence embeddings
+    embeddings = []
+    for sentence in tokenized_sentences:
+        sentence_embeddings = np.mean([word_embedding(word) for word in sentence], axis=0)
+        embeddings.append(sentence_embeddings)
 
-coherence_score = calculate_coherence(text)
-print(f"Coherence Score: {coherence_score}")
+    # Compute pairwise cosine similarity between sentence embeddings
+    similarity_matrix = cosine_similarity(embeddings)
+
+    # Compute coherence score as the average pairwise cosine similarity
+    coherence_score = np.mean(similarity_matrix)
+
+    return coherence_score
+
+# Example usage
+text = "This is the first sentence. This is the second sentence. These sentences are related."
+coherence_score = compute_coherence(text)
+
+print("Coherence score:", coherence_score)
