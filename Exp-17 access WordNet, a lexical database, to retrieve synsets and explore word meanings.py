@@ -1,44 +1,47 @@
 !pip install nltk
 import nltk
 nltk.download('wordnet')
-nltk.download('punkt')
 
 from nltk.corpus import wordnet as wn
-from nltk.tokenize import word_tokenize
 
-def lesk(word, sentence):
-    best_sense = None
-    max_overlap = 0
+# Retrieve synsets for a word
+synsets = wn.synsets('car')
 
-    # Tokenize the sentence into words
-    context = word_tokenize(sentence)
+# Print the synsets and their definitions
+for synset in synsets:
+    print("Synset:", synset.name())
+    print("Definition:", synset.definition())
+    print()
 
-    # Iterate over the synsets of the target word
-    for sense in wn.synsets(word):
-        signature = word_tokenize(sense.definition())
+# Explore hypernyms (more general terms)
+car_synset = synsets[0]
+hypernyms = car_synset.hypernyms()
 
-        # Add examples to the signature
-        for example in sense.examples():
-            signature += word_tokenize(example)
+print("Hypernyms of", car_synset.name())
+for hypernym in hypernyms:
+    print(hypernym.name(), "-", hypernym.definition())
+print()
 
-        # Calculate the overlap between the signature and the context
-        overlap = len(set(signature) & set(context))
+# Explore hyponyms (more specific terms)
+hyponyms = car_synset.hyponyms()
 
-        # Update the best sense if the overlap is greater
-        if overlap > max_overlap:
-            max_overlap = overlap
-            best_sense = sense
+print("Hyponyms of", car_synset.name())
+for hyponym in hyponyms:
+    print(hyponym.name(), "-", hyponym.definition())
+print()
 
-    return best_sense
+# Explore holonyms (part-whole relationships)
+holonyms = car_synset.part_holonyms()
 
-# Example usage
-word = "bank"
-sentence = "I went to the bank to deposit some money."
-sense = lesk(word, sentence)
+print("Holonyms of", car_synset.name())
+for holonym in holonyms:
+    print(holonym.name(), "-", holonym.definition())
+print()
 
-if sense:
-    print("Word:", word)
-    print("Sense:", sense)
-    print("Definition:", sense.definition())
-else:
-    print("No sense found for the word.")
+# Explore meronyms (part-whole relationships)
+meronyms = car_synset.part_meronyms()
+
+print("Meronyms of", car_synset.name())
+for meronym in meronyms:
+    print(meronym.name(), "-", meronym.definition())
+print()
