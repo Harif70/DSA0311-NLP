@@ -1,25 +1,16 @@
+!pip install nltk
 import nltk
-from nltk import CFG
-
-# Define a context-free grammar
-grammar = CFG.fromstring("""
-    S -> NP VP
-    NP -> Det N
-    VP -> V
-    Det -> 'the' | 'a'
-    N -> 'cat' | 'dog'
-    V -> 'chased' | 'ate'
-""")
-
-# Create a parser with the defined grammar
-parser = nltk.ChartParser(grammar)
-
-# Input sentence to parse
-sentence = "the cat chased a dog"
-
-# Tokenize the sentence into words
-words = sentence.split()
-
-# Parse the sentence and generate the parse tree
-for tree in parser.parse(words):
-    tree.pretty_print()
+from nltk.tokenize import word_tokenize
+from nltk.tag import pos_tag
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+def stochastic_pos_tag(sentence):
+  words = word_tokenize(sentence)
+  pos_tags = pos_tag(words)
+    return pos_tags
+example_sentence = "The quick brown fox jumps over the lazy dog."
+result_pos_tags = stochastic_pos_tag(example_sentence)
+print(f"Original Sentence: {example_sentence}")
+print("Stochastic Part-of-Speech Tags:")
+for word, pos_tag in result_pos_tags:
+    print(f"{word}: {pos_tag}")
